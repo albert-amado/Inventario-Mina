@@ -39,8 +39,8 @@ def _tendencia_meses_usuario(doc: str) -> dict[str, list]:
         .annotate(mes=TruncMonth('fecha'))
         .values('mes')
         .annotate(
-            total=Count('id'),
-            devueltos=Count('id', filter=Q(estado='devuelto')),
+            total=Count('codigo_prestamo'),
+            devueltos=Count('codigo_prestamo', filter=Q(estado='devuelto')),
         )
     )
     mapa_total = {(f['mes'].year, f['mes'].month): f['total'] for f in filas}
@@ -76,10 +76,10 @@ def home_usuario_view(request):
 
     # ── Conteo de estados: ANTES 3 queries (.filter().count() x3) → AHORA 1 sola (aggregate) ──
     estados = all_prestamos.aggregate(
-        total=Count('id'),
-        activos_count=Count('id', filter=Q(estado__in=['activo', 'parcial'])),
-        devueltos_count=Count('id', filter=Q(estado='devuelto')),
-        vencidos_count=Count('id', filter=Q(estado='vencido')),
+        total=Count('codigo_prestamo'),
+        activos_count=Count('codigo_prestamo', filter=Q(estado__in=['activo', 'parcial'])),
+        devueltos_count=Count('codigo_prestamo', filter=Q(estado='devuelto')),
+        vencidos_count=Count('codigo_prestamo', filter=Q(estado='vencido')),
     )
     total_prestamos = estados['total']
 
