@@ -134,3 +134,21 @@ class DetalleTrasladoDetailView(DetailView):
     model = DetalleTraslado
     template_name = "herramienta/detalle_traslado_detail.html"
     context_object_name = "detalle_traslado"
+
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView
+
+class ProveedorListView(ListView):
+    model = Proveedor
+    template_name = "proveedores.html"
+    context_object_name = "proveedores"
+
+class ProveedorCreateView(CreateView):
+    model = Proveedor
+    template_name = "proveedores.html"
+    fields = ['nit_proveedor', 'telefono_contacto', 'correo_proveedor', 'descripcion']
+    success_url = reverse_lazy('herramienta:proveedor_list')
+    
+    def form_valid(self, form):
+        messages.success(self.request, "Proveedor registrado con éxito.")
+        return super().form_valid(form)

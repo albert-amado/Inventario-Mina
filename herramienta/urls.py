@@ -41,4 +41,14 @@ urlpatterns = [
         views.DetalleTrasladoDetailView.as_view(),
         name="detalle_traslado_detail",
     ),
+    path(
+        "proveedores/",
+        views.ProveedorListView.as_view(),
+        name="proveedor_list",
+    ),
+    path(
+        "proveedores/nuevo/",
+        views.ProveedorCreateView.as_view(),
+        name="proveedor_create",
+    ),
 ]

@@ -90,7 +90,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'inventario:lista_proveedores' %}" novalidate>
+            <form method="post" action="{% url 'herramienta:proveedor_create' %}" novalidate>
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="modal-section-title">Datos del proveedor</div>
