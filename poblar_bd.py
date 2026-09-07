@@ -110,7 +110,7 @@ def poblar():
     traslado_1 = Traslado.objects.create(
         fecha_movimiento=timezone.now().date(),
         tipo_movimiento="Ingreso",
-        num_estante_origen=estante_1.num_estante,
+        num_estante_origen=estante_1,
         observaciones="Ingreso inicial"
     )
     
@@ -124,7 +124,7 @@ def poblar():
     # 7. Crear Préstamos (y detalles y devoluciones)
     print("Creando préstamos...")
     prestamo_1 = Prestamo.objects.create(
-        documento=normal_user.documento,
+        documento=normal_user,
         ficha="2345678",
         fecha=timezone.now().date(),
         estado="ENTREGADO",
