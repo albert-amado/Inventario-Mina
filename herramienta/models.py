@@ -76,7 +76,6 @@ class Herramienta(models.Model):
     )
     estado = models.CharField(max_length=50, blank=True, null=True)
 
-    estado = models.CharField(max_length=50, blank=True, null=True)
 
     estante = models.ForeignKey(
         "almacen.Estante",
@@ -107,6 +106,11 @@ class Herramienta(models.Model):
         ):
             return int(self.disponibilidad)
         return 1 if self.disponibilidad != "No disponible" else 0
+    @property
+    def ubicacion(self):
+     if self.estante:
+        return str(self.estante)  
+     return "Sin ubicación"
 
     @stock_disponible.setter
     def stock_disponible(self, value):
