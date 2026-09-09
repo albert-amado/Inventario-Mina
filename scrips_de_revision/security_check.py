@@ -6,6 +6,11 @@ import django
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
+# Asegurar que la raíz del proyecto esté en sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 # Inicializar configuración de Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()

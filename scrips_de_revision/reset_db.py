@@ -8,7 +8,7 @@ import os
 import shutil
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def reset_db_y_migraciones():
