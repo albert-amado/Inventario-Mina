@@ -54,6 +54,9 @@ def inventario_view(request):
             cat_id = request.POST.get('categoria')
             if cat_id:
                 herramienta.codigo_categoria = CategoriaHerramienta.objects.filter(pk=cat_id).first()
+            stock_val = request.POST.get('stock')
+            if stock_val is not None and stock_val.strip():
+                herramienta.stock_disponible = stock_val
             herramienta.save()
             messages.success(request, f"Herramienta '{herramienta.nombre_herramienta}' actualizada.")
             return redirect('inventario')
