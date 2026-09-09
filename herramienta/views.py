@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import JsonResponse
 from django.views.generic import DetailView, ListView
 from common.mixins import sesion_requerida
 
@@ -21,7 +22,7 @@ def inventario_view(request):
     herramientas = Herramienta.objects.select_related('codigo_categoria', 'codigo_suministro').all()
     categorias = CategoriaHerramienta.objects.all()
     almacenes = Almacen.objects.all()
-    estantes = Estante.objects.select_related('almacen').all()
+    estantes = Estante.objects.select_related('codigo_almacen').all()
     usuarios_sistema = Usuario.objects.all()
 
     if request.method == 'POST':
@@ -148,7 +149,34 @@ class ProveedorCreateView(CreateView):
     template_name = "proveedores.html"
     fields = ['nit_proveedor', 'telefono_contacto', 'correo_proveedor', 'descripcion']
     success_url = reverse_lazy('herramienta:proveedor_list')
-    
+
     def form_valid(self, form):
         messages.success(self.request, "Proveedor registrado con éxito.")
         return super().form_valid(form)
+
+
+def api_estantes(request):
+    """
+    Devuelve los estantes de un almacén específico en formato JSON.
+    Usado por el dropdown encadenado almacén → estante.
+    Espera ?almacen_id=<id> como query param.
+    """
+    almacen_id = request.GET.get('almacen_id')
+
+    if not almacen_id:
+        return JsonResponse({'error': 'almacen_id es requerido'}, status=400)
+
+    estantes = Estante.objects.filter(
+        codigo_almacen_id=almacen_id
+    ).select_related('codigo_almacen').order_by('codigo')
+
+    data = [
+        {
+            'id': estante.pk,
+            'codigo': estante.codigo,
+            'ubicacion': f"AL{estante.codigo_almacen_id}-ES{estante.pk}",
+        }
+        for estante in estantes
+    ]
+
+    return JsonResponse({'estantes': data})

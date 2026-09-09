@@ -6,6 +6,7 @@ from common.mixins import sesion_requerida
 from django.http import HttpResponse
 from django.conf import settings
 
+
 @sesion_requerida
 def vista_almacenes(request):
     almacenes = Almacen.objects.all()
