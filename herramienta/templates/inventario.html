@@ -348,7 +348,7 @@
               </button>
               {% endif %}
 
-              <button type="button" class="btn btn-sm btn-light border btn-action-small" data-bs-toggle="tooltip" data-bs-placement="top" title="Modificar información" onclick="abrirEditar('{{ producto.pk }}', '{{ producto.codigo_sku|escapejs }}', '{{ producto.nombre|escapejs }}', '{% if producto.descripcion %}{{ producto.descripcion|escapejs }}{% endif %}', '{{ producto.stock_disponible }}', '{% if producto.codigo_categoria %}{{ producto.codigo_categoria.pk }}{% endif %}')">
+              <button type="button" class="btn btn-sm btn-light border btn-action-small" data-bs-toggle="tooltip" data-bs-placement="top" title="Modificar información" onclick="abrirEditar('{{ producto.pk }}', '{{ producto.codigo_sku|escapejs }}', '{{ producto.nombre|escapejs }}', '{% if producto.descripcion %}{{ producto.descripcion|escapejs }}{% endif %}', '{{ producto.stock_disponible }}', '{% if producto.codigo_categoria %}{{ producto.codigo_categoria.pk }}{% endif %}', '{% if producto.estante %}{{ producto.estante.almacen.pk }}{% endif %}', '{% if producto.estante %}{{ producto.estante.pk }}{% endif %}')">
                 <i class="bi bi-pencil"></i>
               </button>
             </div>
@@ -505,6 +505,25 @@
               <textarea name="descripcion" class="form-control" rows="3" placeholder="Descripción (opcional)">{{ post_descripcion }}</textarea>
             </div>
           </div>
+
+          <div class="modal-section-title mt-4">Ubicación física</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label text-muted fw-bold small uppercase mb-1">Almacén</label>
+              <select id="nueva_almacen" class="form-select">
+                <option value="">-- Selecciona almacén --</option>
+                {% for alm in almacenes %}
+                <option value="{{ alm.pk }}">{{ alm.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-muted fw-bold small uppercase mb-1">Estante</label>
+              <select name="estante" id="nueva_estante" class="form-select" disabled>
+                <option value="">-- Selecciona un almacén primero --</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="modal-footer bg-light border-0 px-4 py-3">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -543,6 +562,21 @@
                 {% for cat in categorias %}
                 <option value="{{ cat.pk }}">{{ cat.nombre }}</option>
                 {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold small uppercase mb-1">Almacén</label>
+              <select id="edit_almacen" class="form-select">
+                <option value="">-- Selecciona almacén --</option>
+                {% for alm in almacenes %}
+                <option value="{{ alm.pk }}">{{ alm.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted fw-bold small uppercase mb-1">Estante</label>
+              <select name="estante" id="edit_estante" class="form-select" disabled>
+                <option value="">-- Selecciona un almacén primero --</option>
               </select>
             </div>
             <div class="col-12">
@@ -608,7 +642,45 @@
 </div>
 
 <script>
-  function abrirEditar(id, sku, nombre, descripcion, stock, categoria) {
+  function cargarEstantes(almacenId, selectEstanteEl, estanteSeleccionado) {
+    if (!almacenId) {
+      selectEstanteEl.innerHTML = '<option value="">-- Selecciona un almacén primero --</option>';
+      selectEstanteEl.disabled = true;
+      return;
+    }
+    selectEstanteEl.innerHTML = '<option value="">Cargando...</option>';
+    selectEstanteEl.disabled = true;
+
+    fetch(`{% url 'api_estantes' %}?almacen_id=${almacenId}`)
+      .then(res => res.json())
+      .then(data => {
+        selectEstanteEl.innerHTML = '<option value="">-- Selecciona estante --</option>';
+        (data.estantes || []).forEach(est => {
+          let opt = document.createElement('option');
+          opt.value = est.id;
+          opt.textContent = `${est.codigo} (${est.ubicacion})`;
+          if (estanteSeleccionado && String(est.id) === String(estanteSeleccionado)) {
+            opt.selected = true;
+          }
+          selectEstanteEl.appendChild(opt);
+        });
+        selectEstanteEl.disabled = false;
+      })
+      .catch(() => {
+        selectEstanteEl.innerHTML = '<option value="">Error al cargar estantes</option>';
+        selectEstanteEl.disabled = true;
+      });
+  }
+
+  document.getElementById('nueva_almacen').addEventListener('change', function() {
+    cargarEstantes(this.value, document.getElementById('nueva_estante'));
+  });
+
+  document.getElementById('edit_almacen').addEventListener('change', function() {
+    cargarEstantes(this.value, document.getElementById('edit_estante'));
+  });
+
+  function abrirEditar(id, sku, nombre, descripcion, stock, categoria, almacenId, estanteId) {
     document.getElementById('edit_producto_id').value = id;
     document.getElementById('edit_sku').value = sku;
     document.getElementById('edit_nombre').value = nombre;
@@ -620,6 +692,17 @@
       catSelect.value = categoria;
     } else {
       catSelect.value = "";
+    }
+
+    let almacenSelect = document.getElementById('edit_almacen');
+    let estanteSelect = document.getElementById('edit_estante');
+    if (almacenId && almacenId !== 'None' && almacenId !== '') {
+      almacenSelect.value = almacenId;
+      cargarEstantes(almacenId, estanteSelect, estanteId);
+    } else {
+      almacenSelect.value = "";
+      estanteSelect.innerHTML = '<option value="">-- Selecciona un almacén primero --</option>';
+      estanteSelect.disabled = true;
     }
     
     var modalEdit = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarHerramienta'), { backdrop: 'static' });
